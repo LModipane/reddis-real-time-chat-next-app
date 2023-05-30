@@ -28,6 +28,7 @@ export const authOptions: NextAuthOptions = {
 			clientSecret: getGoogleCred().clientSecret,
 		}),
 	],
+	secret: process.env.NEXTAUTH_SECRET,
 	callbacks: {
 		async jwt({ token, user }) {
 			const dbUser = (await db.get(`user:${token}`)) as User | null;
