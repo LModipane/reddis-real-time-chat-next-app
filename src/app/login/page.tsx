@@ -11,8 +11,8 @@ function LoginPage() {
 		setIsLoading(true);
 		try {
 			await signIn('google');
-		} catch (error: any) {
-			toast.error(error.message);
+		} catch (error) {
+			toast.error('opps failed to login');
 		} finally {
 			setIsLoading(false);
 		}
