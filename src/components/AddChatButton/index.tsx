@@ -10,8 +10,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 type FormData = z.infer<typeof addFriendValidator>;
 
 const AddChatButton = () => {
-	const [friendEmail, setFriendEmail] = useState<string>('');
 	const [isSuccessful, setIsSuccessful] = useState<boolean>(false);
+	const [isLoading, setIsLoading] = useState<boolean>(false);
 
 	const {
 		register,
@@ -23,6 +23,8 @@ const AddChatButton = () => {
 	});
 
 	const addFriend = async (friendEmail: string) => {
+		setIsLoading(true);
+		setIsSuccessful(false);
 		try {
 			const validatedEmail = addFriendValidator.parse({ email: friendEmail });
 			await axios.post('/api/friends/add', { email: validatedEmail.email });
@@ -32,12 +34,15 @@ const AddChatButton = () => {
 				setError('email', { message: error.message });
 				return;
 			}
+
 			if (error instanceof AxiosError) {
 				setError('email', { message: error.response?.data });
 				return;
 			}
 
 			setError('email', { message: 'Opps, Something went wrong' });
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
@@ -59,7 +64,7 @@ const AddChatButton = () => {
 					placeholder="friend@example.com"
 					{...register('email')}
 				/>
-				<Button isLoading={false} type="submit">
+				<Button isLoading={isLoading} disabled={isLoading} type="submit">
 					Add
 				</Button>
 			</div>
