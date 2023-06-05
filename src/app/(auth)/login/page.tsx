@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { signIn } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
+import { Icons } from '@/components/ui/icons';
 
 function LoginPage() {
 	const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -22,7 +23,7 @@ function LoginPage() {
 			<div className="flex min-h-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
 				<div className="flex flex-col w-full max-w-md items-center space-y-8">
 					<div className="flex flex-col gap-8 items-center">
-						logo
+						<Icons.Logo />
 						<h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
 							Sign In to your account
 						</h2>
