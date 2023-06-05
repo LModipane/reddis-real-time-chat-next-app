@@ -6,6 +6,8 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { SignOutButton } from '@/components/SignOutButton';
+import { FriendRequestAction } from '@/components/FriendRequestAction';
+import { fetchRedis } from '@/lib/helper/redis';
 
 type LayoutProps = {
 	children: React.ReactNode;
@@ -17,6 +19,22 @@ type SidebarAction = {
 	href: string;
 	icon: Icon;
 };
+
+async function layout({ children }: LayoutProps) {
+	const session = await getServerSession(authOptions);
+	if (!session) notFound();
+
+	return (
+		<div className="flex w-full h-screen">
+			{/**@ts-expect-error */}
+			<SidebarActions session={session} />
+			{children}
+		</div>
+	);
+}
+
+export default layout;
+
 const sidebarAction: SidebarAction[] = [
 	{
 		id: 1,
@@ -26,25 +44,20 @@ const sidebarAction: SidebarAction[] = [
 	},
 ];
 
-async function layout({ children }: LayoutProps) {
-	const session = await getServerSession(authOptions);
-	if (!session) notFound();
-
-	return (
-		<div className="flex w-full h-screen">
-			<SidebarActions session={session} />
-			{children}
-		</div>
-	);
-}
-
-export default layout;
-
 type Props = {
 	session: Session;
 };
 
-function SidebarActions({ session }: Props) {
+async function SidebarActions({ session }: Props) {
+	const unseenRequestCount = (
+		(await fetchRedis(
+			'smembers',
+			`user:${session.user.id}:incoming_friend_requests`,
+		)) as string[]
+	).length;
+
+	console.log(' number of unseen request: ', unseenRequestCount);
+
 	return (
 		<div className="flex h-full w-full max-w-xs grow flex-col gap-y-1.5 overflow-y-auto border-r border-gray-200 bg-white px-2">
 			<Link href="/chats" className="flex h-16 shrink-0 items-center">
@@ -75,34 +88,49 @@ function SidebarActions({ session }: Props) {
 								);
 							})}
 
-							<li>{/** friend request list*/}</li>
+							<li>
+								<FriendRequestAction
+									initialUnseenRequestCount={unseenRequestCount}
+								/>
+							</li>
 						</ul>
 					</li>
 
 					<li className="mt-auto flex items-center ">
-						<div className="flex flex-1 items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-gray-900">
-							<div className="relative h-8 w-8 bg-gray-50">
-								<Image
-									src={session.user.image || '/default-profile.svg'}
-									alt=""
-									fill
-									className="rounded-full"
-									referrerPolicy="no-referrer"
-								/>
-							</div>
-							<span className="sr-only">Your profile</span>
-							<div className="flex flex-col">
-								<span aria-hidden="true">{session.user.name}</span>
-								<span className="text-xs text-zinc-400" aria-hidden="true">
-									{session.user.email}
-								</span>
-							</div>
-						</div>
-
-						<SignOutButton className="w-full aspect-square" />
+						<UserProfile session={session} />
 					</li>
 				</ul>
 			</nav>
 		</div>
+	);
+}
+
+type Props1 = {
+	session: Session;
+};
+function UserProfile({ session }: Props1) {
+	return (
+		<>
+			<div className="flex flex-1 items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-gray-900">
+				<div className="relative h-8 w-8 bg-gray-50">
+					<Image
+						src={session.user.image || '/default-profile.svg'}
+						alt=""
+						fill
+						className="rounded-full"
+						referrerPolicy="no-referrer"
+					/>
+				</div>
+				<span className="sr-only">Your profile</span>
+				<div className="flex flex-col">
+					<span aria-hidden="true">{session.user.name}</span>
+					<span className="text-xs text-zinc-400" aria-hidden="true">
+						{session.user.email}
+					</span>
+				</div>
+			</div>
+
+			<SignOutButton className="w-full aspect-square" />
+		</>
 	);
 }

@@ -6,7 +6,6 @@ import { getServerSession } from 'next-auth';
 import { ZodError } from 'zod';
 
 export async function POST(req: Request) {
-	console.log('Hello from server');
 	const session = await getServerSession(authOptions);
 	if (!session) {
 		return new Response('Opps, Unautherized request', { status: 401 });
@@ -17,10 +16,10 @@ export async function POST(req: Request) {
 
 		const { email: validatedEmailToAdd } = addFriendValidator.parse(body);
 
-		const friendId = await fetchRedis(
+		const friendId = (await fetchRedis(
 			'get',
 			`user:email:${validatedEmailToAdd}`,
-		) as string;
+		)) as string;
 
 		if (!friendId) return new Response('Friend not found!', { status: 404 });
 
@@ -31,20 +30,19 @@ export async function POST(req: Request) {
 		}
 
 		//check if friend is already added
-		const isAlreadyAdded = await fetchRedis(
+		const hasAlreadyRequested = (await fetchRedis(
 			'sismember',
-			`user:${validatedEmailToAdd}:incoming_friend_request`,
+			`user:${friendId}:incoming_friend_requests`,
 			session.user.id,
-		);
+		)) as string;
 
-		if (isAlreadyAdded)
-			return new Response('You already added this friend!', { status: 400 });
+		if (hasAlreadyRequested)
+			return new Response('You have already requested this friend!', {
+				status: 400,
+			});
 
 		//send friend request
-		db.sadd(
-			`user:${validatedEmailToAdd}:incoming_friend_request`,
-			session.user.id,
-		); //this line will post the current user's id to the friends incoming friend request list.
+		db.sadd(`user:${friendId}:incoming_friend_requests`, session.user.id); //this line will post the current user's id to the friends incoming friend request list.
 
 		return new Response('OK', { status: 200 });
 	} catch (error) {
