@@ -38,5 +38,6 @@ export async function POST(req: Request) {
 		if (error instanceof ZodError)
 			return new Response('inValid request: ', { status: 422 });
 		console.log(error);
+		return new Response('Opps, something went wrong ', { status: 500 });
 	}
 }

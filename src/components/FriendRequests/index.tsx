@@ -16,9 +16,10 @@ function FriendRequests({ initialFriendRequests }: Props) {
 
 	const denyFriendRequest = async (senderId: string) => {
 		try {
-			const res = await axios.delete('/api/friends/deny', {
-				data: { senderId },
-			});
+			const validSenderId = senderIdValidator.parse({ senderId });
+
+			const res = await axios.post('/api/friends/deny', validSenderId);
+			console.log('response: ', res);
 
 			setFriendRequests(prev =>
 				prev.filter(request => request.senderId !== senderId),
@@ -32,11 +33,11 @@ function FriendRequests({ initialFriendRequests }: Props) {
 
 	const acceptFriendRequest = async (senderId: string) => {
 		try {
-			const validedSenderId = senderIdValidator.parse({
+			const validSenderId = senderIdValidator.parse({
 				senderId,
 			});
 
-			const res = await axios.post('/api/friends/accept', validedSenderId);
+			const res = await axios.post('/api/friends/accept', validSenderId);
 			console.log('res: ', res);
 
 			setFriendRequests(prev =>
