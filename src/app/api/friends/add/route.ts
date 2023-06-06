@@ -29,17 +29,25 @@ export async function POST(req: Request) {
 			});
 		}
 
-		//check if friend is already added
+		//check if friend request is already sent
 		const hasAlreadyRequested = (await fetchRedis(
 			'sismember',
 			`user:${friendId}:incoming_friend_requests`,
 			session.user.id,
-		)) as string;
-
+		)) as 0 | 1;
 		if (hasAlreadyRequested)
 			return new Response('You have already requested this friend!', {
 				status: 400,
 			});
+		
+		//check if you are already friends 
+		const areAlreadyFriends = (await fetchRedis(
+			'sismember',
+			`user:${session.user.id}:friends`,
+			friendId,
+		)) as 0 | 1;
+		if (areAlreadyFriends)
+			return new Response("You're already friends!", { status: 400 });
 
 		//send friend request
 		db.sadd(`user:${friendId}:incoming_friend_requests`, session.user.id); //this line will post the current user's id to the friends incoming friend request list.

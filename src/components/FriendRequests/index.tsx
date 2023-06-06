@@ -1,5 +1,6 @@
 'use client';
-import axios from 'axios';
+import { senderIdValidator } from '@/lib/validators/add-friend';
+import axios, { AxiosError } from 'axios';
 import { Check, UserPlus, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
@@ -15,7 +16,9 @@ function FriendRequests({ initialFriendRequests }: Props) {
 
 	const denyFriendRequest = async (senderId: string) => {
 		try {
-			await axios.delete('/api/friends/deny', { data: { senderId } });
+			const res = await axios.delete('/api/friends/deny', {
+				data: { senderId },
+			});
 
 			setFriendRequests(prev =>
 				prev.filter(request => request.senderId !== senderId),
@@ -27,14 +30,27 @@ function FriendRequests({ initialFriendRequests }: Props) {
 		}
 	};
 
-  const acceptFriendRequest = async (senderId: string) => {
+	const acceptFriendRequest = async (senderId: string) => {
 		try {
-			await axios.post('/api/friends/accept', { senderId });
+			const validedSenderId = senderIdValidator.parse({
+				senderId,
+			});
+
+			const res = await axios.post('/api/friends/accept', validedSenderId);
+			console.log('res: ', res);
+
 			setFriendRequests(prev =>
 				prev.filter(request => request.senderId !== senderId),
 			);
 		} catch (error) {
-			toast.error('Opps failed to accept friend request');
+			if (error instanceof AxiosError) {
+				toast.error(
+					error.response?.data || 'Opps failed to accept friend request',
+				);
+			} else {
+				toast.error('Opps failed to accept friend request');
+			}
+			console.log(error);
 		} finally {
 			router.refresh();
 		}
