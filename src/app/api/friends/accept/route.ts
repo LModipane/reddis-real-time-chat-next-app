@@ -33,7 +33,7 @@ export async function POST(req: Request) {
 		db.sadd(`user:${idToAdd}:friends`, session.user.id);
 		db.srem(`user:${session.user.id}:incoming_friend_requests`, idToAdd);
 
-		return new Response('', { status: 200 });
+		return new Response('ok', { status: 200 });
 	} catch (error) {
 		if (error instanceof ZodError)
 			return new Response('inValid request: ', { status: 422 });

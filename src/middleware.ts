@@ -17,7 +17,6 @@ export async function middleware(req: NextRequest) {
 		if (isAuth) {
 			return NextResponse.redirect(new URL('/chats', req.url));
 		}
-
 		return NextResponse.next();
 	}
 

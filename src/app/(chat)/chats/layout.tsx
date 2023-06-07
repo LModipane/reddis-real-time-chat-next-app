@@ -8,6 +8,8 @@ import Image from 'next/image';
 import { SignOutButton } from '@/components/SignOutButton';
 import { FriendRequestAction } from '@/components/FriendRequestAction';
 import { fetchRedis } from '@/lib/helper/redis';
+import SideBarChats from '@/components/Sidebarchats';
+import { getFriendsByUserId } from '@/lib/helper/getFriendsByUserId';
 
 type LayoutProps = {
 	children: React.ReactNode;
@@ -26,7 +28,6 @@ async function layout({ children }: LayoutProps) {
 
 	return (
 		<div className="flex w-full h-screen">
-			{/**@ts-expect-error */}
 			<SidebarActions session={session} />
 			{children}
 		</div>
@@ -56,6 +57,8 @@ async function SidebarActions({ session }: Props) {
 		)) as string[]
 	).length;
 
+	const friends = await getFriendsByUserId(session.user.id);
+
 	return (
 		<div className="flex h-full w-full max-w-xs grow flex-col gap-y-1.5 overflow-y-auto border-r border-gray-200 bg-white px-2">
 			<Link href="/chats" className="flex h-16 shrink-0 items-center">
@@ -63,7 +66,21 @@ async function SidebarActions({ session }: Props) {
 			</Link>
 			<nav className="flex flex-1 flex-col">
 				<ul role="list" className="flex flex-1 flex-col gap-y-7">
-					<li className="flex items-center">{/** Chat List */}</li>
+					<li className="flex items-center">
+						{friends.length > 0 && (
+							<div
+								className="flex flex-col w-full"
+								>
+								<div className="text-xs font-semibold leading-6 text-gray-400">
+									Your chats
+								</div>
+								<SideBarChats
+									friends={friends}
+									currentUserId={session.user.id}
+								/>
+							</div>
+						)}
+					</li>
 					<li>
 						<div className="text-sm font-semibold text-gray-400 leading-6">
 							overview
