@@ -5,6 +5,8 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import React from 'react';
 import { fetchRedis } from '@/lib/helper/redis';
+import Messages from '@/components/Messages';
+import ChatInput from '@/components/ChatInput';
 
 type Props = {
 	params: {
@@ -59,7 +61,8 @@ export default async function FeedPage({ params }: Props) {
 				</div>
 			</div>
 
-			<Messages/>
+			<Messages />
+			<ChatInput chatPartner={parsedChatPartner} feedId={feedId} />
 		</div>
 	);
 }
