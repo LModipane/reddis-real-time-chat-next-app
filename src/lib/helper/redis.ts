@@ -17,7 +17,8 @@ export async function fetchRedis(
 	});
 
 	if (!RESTResponse.ok) {
-		throw new Error(`Error in fetching Redis data: ${RESTResponse.statusText}`);
+		console.log(RESTResponse.statusText);
+		throw new Error(`Error in fetching Redis data`);
 	}
 
 	const data = await RESTResponse.json();
